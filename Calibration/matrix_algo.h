@@ -57,23 +57,23 @@ namespace easy3d {
 
 
     /**
-     * Compute the Singular Value Decomposition (SVD) of an M by N matrix. This is a wrapper around Eigen's JacobiSVD.
+     * compute the singular value decomposition (svd) of an m by n matrix. this is a wrapper around eigen's jacobisvd.
      *
-     * For an m-by-n matrix A, the singular value decomposition is an m-by-m orthogonal matrix U, an m-by-n diagonal
-     * matrix S, and an n-by-n orthogonal matrix V so that A = U*S*V^T.
+     * for an m-by-n matrix a, the singular value decomposition is an m-by-m orthogonal matrix u, an m-by-n diagonal
+     * matrix s, and an n-by-n orthogonal matrix v so that a = u*s*v^t.
      *
-     * The singular values, s[k] = S[k][k], are sorted in decreasing order, i.e., sigma[i] >= sigma[i+1] for any i.
+     * the singular values, s[k] = s[k][k], are sorted in decreasing order, i.e., sigma[i] >= sigma[i+1] for any i.
      *
-     * The singular value decomposition always exists, so the decomposition will never fail.
+     * the singular value decomposition always exists, so the decomposition will never fail.
      *
-     * @param A The input matrix to be decomposed, which can have an arbitrary size.
-     * @param U The left side M by M orthogonal matrix.
-     * @param S The middle M by N diagonal matrix, with zero elements outside of its main diagonal.
-     * @param V The right side N by N orthogonal matrix V.
+     * @param a the input matrix to be decomposed, which can have an arbitrary size.
+     * @param u the left side m by m orthogonal matrix.
+     * @param s the middle m by n diagonal matrix, with zero elements outside of its main diagonal.
+     * @param v the right side n by n orthogonal matrix v.
      *
-     * @return Upon return, U, S, and V carry the result of the SVD decomposition.
+     * @return upon return, u, s, and v carry the result of the svd decomposition.
      *
-     * @attention V is returned (instead of V^T).
+     * @attention v is returned (instead of v^t).
      */
     void svd_decompose(const Matrix &A, Matrix &U, Matrix &S, Matrix &V);
 

@@ -44,9 +44,11 @@ bool Calibration::calibration(
         Matrix33& R,               /// output: the 3x3 rotation matrix encoding camera orientation.
         Vector3D& t)               /// output：a 3D vector encoding camera translation.
 {
+    /*
     std::cout << "\nTODO: I am going to implement the calibration() function in the following file:\n"
                  "\t    - calibration_method.cpp\n\n";
-
+    */
+    /*
     std::cout << "[Liangliang]:\n"
                  "\tCamera calibration requires computing the SVD and inverse of matrices.\n"
                  "\tIn this assignment, I provide you with a 'Matrix' and a 'Vector' data structures for storing and\n"
@@ -65,7 +67,8 @@ bool Calibration::calibration(
                  "\t    - include all the source code (and please do NOT modify the structure of the directories).\n"
                  "\t    - do NOT include the 'build' directory (which contains the intermediate files in a build step).\n"
                  "\t    - make sure your code compiles and can reproduce your results without ANY modification.\n\n" << std::flush;
-
+    */
+    /*
     /// Below are a few examples showing some useful data structures and functions.
 
     // This is a 1D array of 'double' values. Alternatively, you can use 'double mat[25]' but you cannot change it
@@ -185,12 +188,12 @@ bool Calibration::calibration(
 
     // TODO: the above code just demonstrates some useful data structures and APIs. Please remove all above code in your
     //       final submission.
-
+    */
     //--------------------------------------------------------------------------------------------------------------
     // implementation starts ...
 
-    std::cout << "\n[Liangliang]:\n"
-                 "\tThe input parameters of this function are:\n"
+    /* std::cout << "\n[Liangliang]:\n"
+                  "\tThe input parameters of this function are:\n"
                  "\t\t- points_3d: An array of 3D points (input to this function)\n"
                  "\t\t- points_2d: An array of 2D image points (input to this function)\n"
                  "\tThis function must return either 'true' on success or 'false' otherwise. On success, the camera\n"
@@ -201,14 +204,89 @@ bool Calibration::calibration(
                  "\t\t- R:         the 3x3 rotation matrix encoding camera orientation\n"
                  "\t\t- t:         a 3D vector encoding camera location.\n"
                  "\tIMPORTANT: don't forget to write your recovered parameters to the above variables." << std::endl;
+    */
 
     // TODO: check if input is valid (e.g., number of correspondences >= 6, sizes of 2D/3D points must match)
+    std::cout << '\n' << "OUR IMPLEMENTATION STARTS HERE :)" << '\n';
 
-    // TODO: construct the P matrix (so P * m = 0).
+    int num_points = points_3d.size();
+    std::cout << "\n total amount of points: " << num_points << '\n';
+    std::cout << "\n amount of points on the first row: " << points_3d[0].size() << '\n';
+
+    if (num_points < 6) {
+        std::cout << "ERROR: Incufficient number of points";
+        return false;
+    }
+
+    if (points_2d.size() != points_3d.size()) {
+        std:: cout << "ERROR: 2D and 3D points do not have same size\n";
+        return false;
+    }
+
+// creat P-matrix:
+    int n = points_3d.size();
+    Matrix P(2*n, 12, 0.0);
+    for (int i = 0; i < P.rows(); i++) {
+        if (i % 2==0) {
+            int m = i/2;
+            P.set_row(i, {points_3d[m][0], points_3d[m][1], points_3d[m][2], 1,
+                          0, 0, 0, 0,
+                          -points_2d[m][0]*points_3d[m][0], -points_2d[m][0]*points_3d[m][1],
+                          -points_2d[m][0]*points_3d[m][2], -points_2d[m][0]*1});
+        }
+        if (i % 2==1) {
+            int m = i/2;
+            P.set_row(i, {0, 0, 0, 0,
+                          points_3d[m][0], points_3d[m][1], points_3d[m][2], 1,
+                          -points_2d[m][1]*points_3d[m][0], -points_2d[m][1]*points_3d[m][1],
+                          -points_2d[m][1]*points_3d[m][2], -points_2d[m][1]*1});
+        }
+    }
+
+    // std::cout<<"We're printing matrix: \n";
+    //std::cout<<P<<std::endl;
 
     // TODO: solve for M (the whole projection matrix, i.e., M = K * [R, t]) using SVD decomposition.
     //   Optional: you can check if your M is correct by applying M on the 3D points. If correct, the projected point
     //             should be very close to your input images points.
+
+    /// matrix-vector product
+    int mm = P.rows();
+    int nn = P.cols();
+    Matrix U(mm, mm, 0.0);   // initialized with 0s
+    Matrix S(mm, nn, 0.0);   // initialized with 0s
+    Matrix V(nn, nn, 0.0);   // initialized with 0s
+
+    // Compute the SVD decomposition of A
+
+/*
+* @param a the input matrix to be decomposed, which can have an arbitrary size.
+* @param u the left side m by m orthogonal matrix.
+* @param s the middle m by n diagonal matrix, with zero elements outside of its main diagonal.
+* @param v the right side n by n orthogonal matrix v.
+*/
+    svd_decompose(P, U, S, V);
+    std::cout<<V<<'\n';
+
+    // std::cout<<"We're printing matrix V: \n";
+    // std::cout<<V.get_column(V.cols()-1)<<'\n';
+
+    //last col of V is m
+    Vector m = V.get_column(V.cols()-1);
+    m.resize(3,4);
+
+
+//// Check 1: U is orthogonal, so U * U^T must be identity
+//    std::cout << "U*U^T: \n" << U * transpose(U) << std::endl;
+//
+//    // Check 2: V is orthogonal, so V * V^T must be identity
+//    std::cout << "V*V^T: \n" << V * transpose(V) << std::endl;
+//
+//    // Check 3: S must be a diagonal matrix
+//    std::cout << "S: \n" << S << std::endl;
+//
+//    // Check 4: according to the definition, A = U * S * V^T
+//    std::cout << "M - U * S * V^T: \n" << A - U * S * transpose(V) << std::endl;
 
     // TODO: extract intrinsic parameters from M.
 
@@ -217,22 +295,6 @@ bool Calibration::calibration(
     std::cout << "\n\tTODO: After you implement this function, please return 'true' - this will trigger the viewer to\n"
                  "\t\tupdate the rendering using your recovered camera parameters. This can help you to visually check\n"
                  "\t\tif your calibration is successful or not.\n\n" << std::flush;
-    return false;
+
+    return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
