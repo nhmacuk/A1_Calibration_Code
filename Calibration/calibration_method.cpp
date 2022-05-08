@@ -282,9 +282,17 @@ bool Calibration::calibration(
         //rest  of M is matrix A
     }
 
-    Vector3D r1(m[0],m[1],m[2]);
-    Vector3D r2(m[4],m[5],m[6]);
-    Vector3D r3(m[8],m[9],m[10]);
+    Vector3D a1(m[0],m[1],m[2]);
+    Vector3D a2(m[4],m[5],m[6]);
+    Vector3D a3(m[8],m[9],m[10]);
+
+
+    double rho = 1/ length(a3);
+    // extrinsic parameters:
+    Vector r1 = cross(a2,a3)/length(cross(a2,a3));
+    Vector r3 = rho*a3;
+    Vector r2 = cross(r3,r1);
+
 
 //// Check 1: U is orthogonal, so U * U^T must be identity
 //    std::cout << "U*U^T: \n" << U * transpose(U) << std::endl;
