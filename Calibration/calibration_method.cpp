@@ -208,8 +208,8 @@ bool Calibration::calibration(
     std::cout << '\n' << "OUR IMPLEMENTATION STARTS HERE :)" << '\n';
 
     int num_points = points_3d.size();
-    std::cout << "\n total amount of points: " << num_points << '\n';
-    std::cout << "\n amount of points on the first row: " << points_3d[0].size() << '\n';
+//    std::cout << "\n total amount of points: " << num_points << '\n';
+//    std::cout << "\n amount of points on the first row: " << points_3d[0].size() << '\n';
 
     if (num_points < 6) {
         std::cout << "ERROR: Incufficient number of points";
@@ -264,15 +264,27 @@ bool Calibration::calibration(
 * @param v the right side n by n orthogonal matrix v.
 */
     svd_decompose(P, U, S, V);
-    std::cout<<V<<'\n';
+//    std::cout<<V<<'\n';
 
     // std::cout<<"We're printing matrix V: \n";
     // std::cout<<V.get_column(V.cols()-1)<<'\n';
 
     //last col of V is m
     Vector m = V.get_column(V.cols()-1);
-    m.resize(3,4);
 
+    // fill the M matrix
+    Matrix M(3,4, 0.0);
+    Vector3D b(3,1, 0.0);
+    for (int i = 0; i < m.size(); i = i+4) {
+        M.set_row(i/4, {m[i], m[i+1],m[i+2],m[i+3]});
+        // last col of M is the vector b
+        b[i/4] =  m[i+3];
+        //rest  of M is matrix A
+    }
+
+    Vector3D r1(m[0],m[1],m[2]);
+    Vector3D r2(m[4],m[5],m[6]);
+    Vector3D r3(m[8],m[9],m[10]);
 
 //// Check 1: U is orthogonal, so U * U^T must be identity
 //    std::cout << "U*U^T: \n" << U * transpose(U) << std::endl;
@@ -290,9 +302,9 @@ bool Calibration::calibration(
 
     // TODO: extract extrinsic parameters from M.
 
-    std::cout << "\n\tTODO: After you implement this function, please return 'true' - this will trigger the viewer to\n"
-                 "\t\tupdate the rendering using your recovered camera parameters. This can help you to visually check\n"
-                 "\t\tif your calibration is successful or not.\n\n" << std::flush;
+//    std::cout << "\n\tTODO: After you implement this function, please return 'true' - this will trigger the viewer to\n"
+//                 "\t\tupdate the rendering using your recovered camera parameters. This can help you to visually check\n"
+//                 "\t\tif your calibration is successful or not.\n\n" << std::flush;
 
     return true;
 }
