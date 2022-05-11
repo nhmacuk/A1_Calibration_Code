@@ -282,37 +282,73 @@ bool Calibration::calibration(
         //rest  of M is matrix A
     }
 
-    Vector3D a1(m[0],m[1],m[2]);
-    Vector3D a2(m[4],m[5],m[6]);
-    Vector3D a3(m[8],m[9],m[10]);
+    Vector3D a1(m[0],m[1],m[2]);//G
+    Vector3D a2(m[4],m[5],m[6]);//G
+    Vector3D a3(m[8],m[9],m[10]);//G
 
 
-    double rho = 1/ length(a3);
-    // extrinsic parameters:
-    Vector r1 = cross(a2,a3)/length(cross(a2,a3));
-    Vector r3 = rho*a3;
-    Vector r2 = cross(r3,r1);
+    double rho = -1/ length(a3);//G // TODO `pos or neg decide
 
-
-//// Check 1: U is orthogonal, so U * U^T must be identity
-//    std::cout << "U*U^T: \n" << U * transpose(U) << std::endl;
-//
-//    // Check 2: V is orthogonal, so V * V^T must be identity
-//    std::cout << "V*V^T: \n" << V * transpose(V) << std::endl;
-//
-//    // Check 3: S must be a diagonal matrix
-//    std::cout << "S: \n" << S << std::endl;
-//
-//    // Check 4: according to the definition, A = U * S * V^T
-//    std::cout << "M - U * S * V^T: \n" << A - U * S * transpose(V) << std::endl;
+    double uo = rho*rho* dot(a1,a3);//G
+    double vo = rho*rho* dot(a2,a3);//G
 
     // TODO: extract intrinsic parameters from M.
+    Vector a1a3 = cross(a1,a3);
+    Vector a2a3 = cross(a2,a3);
+
+    double upper = dot(a1a3,a2a3);
+    double lower = length(a1a3)*length(a2a3);
+    double theta = acos(-upper/lower);
+
+    double alpha = rho*rho* length(a1a3)*sin(theta);
+    double beta =  rho*rho* length(a2a3)*sin(theta);
+
+    Matrix33 K(alpha, -alpha*(cos(theta)/sin(theta)), uo,
+               0, beta/(sin(theta)), vo,
+               0, 0, 1);
 
     // TODO: extract extrinsic parameters from M.
+    Vector r1 = a2a3/length(a2a3);//G
+    Vector r3 = rho*a3;//G
+    Vector r2 = cross(r3,r1);//G
+//    Matrix R(3, 3, 0.0);
+    Matrix33 R_fake(r1[0],r1[1],r1[2], //G
+                    r2[0],r2[1],r2[2],
+                    r3[0],r3[1],r3[2]);
+    //check:
+    std::cout<< "R.T*R "<< R_fake*transpose(R_fake) << "\n";
 
-//    std::cout << "\n\tTODO: After you implement this function, please return 'true' - this will trigger the viewer to\n"
-//                 "\t\tupdate the rendering using your recovered camera parameters. This can help you to visually check\n"
-//                 "\t\tif your calibration is successful or not.\n\n" << std::flush;
+
+    // output variables:
+    //    double& fx, double& fy,    /// output: the focal length (in our slides, we use 'alpha' and 'beta'),
+    //    double& cx, double& cy,    /// output: the principal point (in our slides, we use 'u0' and 'v0'),
+    //    double& skew,              /// output: the skew factor ('-alpha * cot_theta')
+    //    Matrix33& R,               /// output: the 3x3 rotation matrix encoding camera orientation.
+    //    Vector3D& t)               /// output：a 3D vector encoding camera translation.
+
+    fx = alpha; fy = beta;
+    cx = uo; cy = vo;
+//    skew = -alpha*(cos(theta)/sin(theta));
+    skew = 0; //TODO discuss
+    R = R_fake;
+
+    Vector3D t_fake = rho*inverse(K)*b;  // translation matrix
+    t = t_fake ;
+
+    /// add calculate the coordinates to check:
+    Matrix P_tick = K*M*P_w;
+    //
+    //    cx and cy wrong
+    //    t values
+    std::cout    << "rho: " << rho        << "\n"     ;
+    std::cout    << "fx: " << fx        << "\n"     ;
+    std::cout    << "fy: " << fy        << "\n"     ;
+    std::cout    << "cx: " << cx        << "\n"    ;
+    std::cout    << "cy: " << cy        << "\n"    ;                //    std::cout << "\n\tTODO: After you implement this function, please return 'true' - this will trigger the viewer to\n";;
+    std::cout    << "sk: " << skew      << "\n"   ;        //                 "\t\tupdate the rendering using your recovered camera parameters. This can help you to visually check\n"
+    std::cout    << "R : " << R         << "\n"    ;   //                 "\t\tif your calibration is successful or not.\n\n" << std::flush;
+    std::cout    << "t : " << t         << "\n"    ;
+    std::cout    << "P': " << P_tick    << "\n"    ;
 
     return true;
 }
