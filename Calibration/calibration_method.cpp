@@ -120,21 +120,26 @@ bool Calibration::calibration(
     Vector3D a3(m[8], m[9], m[10]);
 
     double rho = 1 / length(a3);
+
     // Optional: you can check if your M is correct by applying M on the 3D points. If correct, the projected point
     // should be very close to your input images points.
     Matrix P_tick = (M/rho)*P_w;
+    //normalization of P:
     for (int i = 0; i < P.cols(); i++) {
         P_tick[0][i] = P_tick[0][i]/P_tick[2][i];
         P_tick[1][i] = P_tick[1][i]/P_tick[2][i];
         P_tick[2][i] = P_tick[2][i]/P_tick[2][i];
     }
     for (int i = 0; i < P.cols(); i++) {
-//        P_tick[0][i] = P_tick[0][i]/P_tick[2][i];
         P_tick[1][i] = P_tick[1][i]/P_tick[2][i];
-//        P_tick[2][i] = P_tick[2][i]/P_tick[2][i];
         P_tick[2][i] = 1;
     }
-    std::cout << "P': " << P_tick << "\n";
+//    std::cout << "P': " << P_tick << "\n";
+    Matrix P_compare(3, 6,{points_2d[0][0], points_2d[1][0], points_2d[2][0], points_2d[3][0], points_2d[4][0], points_2d[5][0],
+                     points_2d[0][1], points_2d[1][1], points_2d[2][1], points_2d[3][1], points_2d[4][1], points_2d[5][1],
+                    1,1,1,1,1,1});
+//    std::cout << "Pcomp: " << P_compare << "\n";
+//    std::cout << "P comparison: " << P_compare-P_tick<< "\n";
 
     // extract intrinsic parameters from M.
 
