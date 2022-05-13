@@ -339,7 +339,7 @@ bool Calibration::calibration(
 
     /// add calculate the coordinates to check:
     Matrix P_tick = M * P_w;
-    std::cout << "P': " << P_tick << "\n";
+    std::cout << "P': " << P_tick << "\
     for (int i = 0; i < P.cols(); i++) {
         P_tick[0][i] = P_tick[0][i]/P_tick[2][i];
 //        P_tick[1][i] = P_tick[1][i]/P_tick[2][i];
