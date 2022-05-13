@@ -287,7 +287,7 @@ bool Calibration::calibration(
     Vector3D a3(m[8],m[9],m[10]);//G
 
 
-    double rho = -1/ length(a3);//G // TODO `pos or neg decide
+    double rho = 1 / length(a3);//G // TODO `pos or neg decide
 
     double uo = rho*rho* dot(a1,a3);//G
     double vo = rho*rho* dot(a2,a3);//G
@@ -326,29 +326,38 @@ bool Calibration::calibration(
     //    Matrix33& R,               /// output: the 3x3 rotation matrix encoding camera orientation.
     //    Vector3D& t)               /// output：a 3D vector encoding camera translation.
 
-    fx = alpha; fy = beta;
-    cx = uo; cy = vo;
-//    skew = -alpha*(cos(theta)/sin(theta));
-    skew = 0; //TODO discuss
+    fx = alpha;
+    fy = beta;
+    cx = uo;
+    cy = vo;
+    skew = -alpha * (cos(theta) / sin(theta));
+    //skew = 0; //TODO discuss
     R = R_fake;
 
     Vector3D t_fake = rho*inverse(K)*b;  // translation matrix
     t = t_fake ;
 
     /// add calculate the coordinates to check:
-    Matrix P_tick = K*M*P_w;
-    //
-    //    cx and cy wrong
-    //    t values
-    std::cout    << "rho: " << rho        << "\n"     ;
-    std::cout    << "fx: " << fx        << "\n"     ;
-    std::cout    << "fy: " << fy        << "\n"     ;
-    std::cout    << "cx: " << cx        << "\n"    ;
-    std::cout    << "cy: " << cy        << "\n"    ;                //    std::cout << "\n\tTODO: After you implement this function, please return 'true' - this will trigger the viewer to\n";;
-    std::cout    << "sk: " << skew      << "\n"   ;        //                 "\t\tupdate the rendering using your recovered camera parameters. This can help you to visually check\n"
-    std::cout    << "R : " << R         << "\n"    ;   //                 "\t\tif your calibration is successful or not.\n\n" << std::flush;
-    std::cout    << "t : " << t         << "\n"    ;
-    std::cout    << "P': " << P_tick    << "\n"    ;
-
+    Matrix P_tick = M * P_w;
+    std::cout << "P': " << P_tick << "\n";
+    for (int i = 0; i < P.cols(); i++) {
+        P_tick[0][i] = P_tick[0][i]/P_tick[2][i];
+//        P_tick[1][i] = P_tick[1][i]/P_tick[2][i];
+    }
+    std::cout << "rho: " << rho << "\n";
+    std::cout << "fx: " << fx << "\n";
+    std::cout << "fy: " << fy << "\n";
+    std::cout << "cx: " << cx << "\n";
+    std::cout << "cy: " << cy
+              << "\n";                //    std::cout << "\n\tTODO: After you implement this function, please return 'true' - this will trigger the viewer to\n";;
+    std::cout << "sk: " << skew
+              << "\n";        //                 "\t\tupdate the rendering using your recovered camera parameters. This can help you to visually check\n"
+    std::cout << "R : " << R
+              << "\n";   //                 "\t\tif your calibration is successful or not.\n\n" << std::flush;
+    std::cout << "t : " << t << "\n";
+    std::cout << "P': " << P_tick << "\n";
+    std::cout << "Pw: " << P_w << "\n";
+    std::cout << "K: " << K << "\n";
+    std::cout << "M: " << M << "\n";
     return true;
 }
